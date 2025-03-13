@@ -1,5 +1,5 @@
 {
-  "name": "@tonilab/n8n-nodes-discord-custom",
+  "name": "@florianai/n8n-nodes-discord-custom",
   "version": "0.7.3",
   "description": "nodes to trigger workflows from Discord or send interactive messages. Uses the components API which allows to create dialogs (e.g. attach buttons and wait for the user to click on them)",
   "keywords": [
@@ -11,14 +11,14 @@
     "n8n-community-node-package"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/antonio-abrantes/n8n-nodes-discord-test",
+  "homepage": "https://github.com/FlorianAI/n8n-discord-trigger",
   "author": {
-    "name": "antonio-abrantes",
-    "url": "https://github.com/antonio-abrantes"
+    "name": "FlorianAI",
+    "url": "https://github.com/FlorianAI"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/antonio-abrantes/n8n-nodes-discord-test"
+    "url": "git+https://github.com/FlorianAI/n8n-discord-trigger"
   },
   "main": "index.js",
   "scripts": {
