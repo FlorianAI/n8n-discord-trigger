@@ -1,6 +1,6 @@
 import { Client, GatewayIntentBits } from 'discord.js'
 import ipc from 'node-ipc'
-
+import { getNodeId } from '../helpers';
 import guildMemberAddEvent from './discordClientEvents/guildMemberAdd.event'
 import guildMemberRemoveEvent from './discordClientEvents/guildMemberRemove.event'
 import guildMemberUpdateEvent from './discordClientEvents/guildMemberUpdate.event'
@@ -20,7 +20,8 @@ import sendMessageIpc from './ipcEvents/sendMessage.ipc'
 import sendPromptIpc from './ipcEvents/sendPrompt.ipc'
 import triggerIpc from './ipcEvents/trigger.ipc'
 
-export default function (NODE_ID: string) {
+export default function () {
+  const NODE_ID = getNodeId()
   console.log(`Starting Discord Bot with NodeId: ${NODE_ID}`);
   const client = new Client({
     intents: [
@@ -40,7 +41,7 @@ export default function (NODE_ID: string) {
 
   client.on('ready', () => {
     addLog(`Logged in as ${client.user?.tag} with NodeId: ${NODE_ID}`, client)
-    registerNodeInstance(NODE_ID); // Înregistrăm instanța botului în state.ts
+    registerNodeInstance(NODE_ID) // Înregistrăm instanța botului în state.ts
   })
 
   // listen to users changing their status events
