@@ -1,5 +1,6 @@
 import { Attachment } from 'discord.js'
 import { v4 as uuidv4 } from 'uuid'
+import { getNodeId } from './helpers'
 import {
   ICredentialsDecrypted,
   ICredentialTestFunctions,
@@ -88,6 +89,13 @@ export class DiscordTrigger implements INodeType {
 
   async trigger(this: ITriggerFunctions): Promise<undefined> {
     const activationMode = this.getActivationMode() as 'activate' | 'update' | 'init' | 'manual'
+     let nodeId = this.getNodeParameter('nodeId', '') as string
+
+    // ✅ Dacă `NodeId` nu este setat, folosim cel din `helpers.ts`
+    if (!nodeId) {
+      nodeId = getNodeId()
+      this.getNode().parameters.nodeId = nodeId // ✅ Salvează NodeId temporar
+    }
     if (activationMode !== 'manual') {
       let baseUrl = ''
 
@@ -103,13 +111,6 @@ export class DiscordTrigger implements INodeType {
       } catch (e) {
         console.log(e)
       }
-      const nodeId = this.getNodeParameter('nodeId', '') as string;
-
-    // Dacă nu există NodeId, generăm unul nou și îl salvăm
-      let finalNodeId = nodeId;
-      if (!finalNodeId) {
-        finalNodeId = uuidv4();
-        await this.setNodeParameter('nodeId', finalNodeId);
       }
       ipc.connectTo('bot-${finalNodeId}', () => {
         const { webhookId } = this.getNode()
