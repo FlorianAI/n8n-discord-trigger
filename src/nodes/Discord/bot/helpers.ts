@@ -3,7 +3,7 @@ import { Client, Message, User } from 'discord.js'
 import { hexoid } from 'hexoid'
 import { INodePropertyOptions } from 'n8n-workflow'
 import ipc from 'node-ipc'
-
+import { v4 as uuidv4 } from 'uuid'
 import state from './state'
 
 export interface ICredentials {
@@ -12,9 +12,19 @@ export interface ICredentials {
   apiKey: string
   baseUrl: string
 }
-
+let NODE_ID: string | null = null;
+// ✅ Funcție pentru a obține sau genera un NodeId
+export function getNodeId(): string {
+  if (!NODE_ID) {
+    NODE_ID = uuidv4()
+    console.log(`Generated new NodeId: ${NODE_ID}`)
+  }
+  return NODE_ID
+}
 export const connection = (credentials: ICredentials): Promise<string> => {
   return new Promise((resolve, reject) => {
+    NODE_ID = getNodeId()
+    state.registerNode(NODE_ID)
     if (!credentials || !credentials.token || !credentials.clientId) {
       reject('credentials missing')
       return
@@ -23,7 +33,7 @@ export const connection = (credentials: ICredentials): Promise<string> => {
     const timeout = setTimeout(() => reject('timeout'), 15000)
 
     ipc.config.retry = 1500
-    ipc.connectTo('bot', () => {
+    ipc.connectTo('bot-${NODE_ID}', () => {
       ipc.of.bot.emit('credentials', credentials)
 
       ipc.of.bot.on('credentials', (data: string) => {
@@ -57,7 +67,7 @@ export const getChannels = async (that: any): Promise<INodePropertyOptions[]> =>
       const timeout = setTimeout(() => resolve(''), 5000)
 
       ipc.config.retry = 1500
-      ipc.connectTo('bot', () => {
+      ipc.connectTo('bot-${NODE_ID}', () => {
         ipc.of.bot.emit('list:channels')
 
         ipc.of.bot.on('list:channels', (data: { name: string; value: string }[]) => {
@@ -108,7 +118,7 @@ export const getRoles = async (that: any): Promise<INodePropertyOptions[]> => {
       const timeout = setTimeout(() => resolve(''), 5000)
 
       ipc.config.retry = 1500
-      ipc.connectTo('bot', () => {
+      ipc.connectTo('bot-${NODE_ID}', () => {
         ipc.of.bot.emit('list:roles')
 
         ipc.of.bot.on('list:roles', (data: any) => {
@@ -187,7 +197,7 @@ export const triggerWorkflow = async (
       console.log(e)
       if (state.triggers[webhookId] && !state.testMode) {
         state.triggers[webhookId].active = false
-        ipc.connectTo('bot', () => {
+        ipc.connectTo('bot-${NODE_ID}', () => {
           ipc.of.bot.emit('trigger', { ...state.triggers[webhookId], baseUrl: state.baseUrl })
         })
       }
@@ -213,7 +223,7 @@ export const addLog = (message: string, client: Client, nodeId?: string) => {
 export const ipcRequest = (type: string, parameters: any): Promise<any> => {
   return new Promise((resolve) => {
     ipc.config.retry = 1500
-    ipc.connectTo('bot', () => {
+    ipc.connectTo('bot-${NODE_ID}', () => {
       ipc.of.bot.emit(type, parameters)
       if (parameters.botCustomization && parameters.botActivity) ipc.of.bot.emit('bot:status', parameters)
 
@@ -265,7 +275,7 @@ export const execution = async (
 ): Promise<boolean> => {
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => reject('timeout'), 15000)
-    ipc.connectTo('bot', () => {
+    ipc.connectTo('bot-${NODE_ID}', () => {
       ipc.of.bot.emit('execution', {
         executionId,
         placeholderId,
